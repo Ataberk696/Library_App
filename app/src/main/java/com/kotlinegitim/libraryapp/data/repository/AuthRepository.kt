@@ -16,5 +16,16 @@ class AuthRepository
         }
     }
 
+    suspend fun signUp(email: String, password: String): Result<Unit> = runCatching {
+        delay(2000)
+
+        val isSuccess = Random.nextBoolean()
+        if (isSuccess){
+            Unit
+        }else{
+            throw Exception("Fake register failed.")
+        }
+    }
+
 
 }

@@ -14,8 +14,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,38 +31,44 @@ import com.kotlinegitim.libraryapp.ui.viewmodel.AuthState
 import com.kotlinegitim.libraryapp.ui.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(onNavigateToRegister: () -> Unit = {}){
-    val authViewModel : AuthViewModel = viewModel() // navigasyon ekranına taşı
+fun RegisterScreen(onRegisterSuccess: () -> Unit){
+    val authViewModel : AuthViewModel = viewModel()
     val authState by authViewModel.authState.collectAsState()
-
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success){
+            onRegisterSuccess()
+        }
+    }
+
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(26.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ) {
-        Text("Kütüphane Sistemi")
-        Spacer(modifier = Modifier.height(8.dp))
-        Text("Giriş Yap")
+    ){
+        Text("Kütüphane Sistemi Kayıt")
+        Spacer(modifier = Modifier.height(10.dp))
+        Text("Kayıt Ol")
         OutlinedTextField(
-            enabled = authState !is AuthState.Loading,
             modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading,
             value = email,
-            label = { Text("E-posta") },
+            label = {Text("E-posta")},
             onValueChange = { value -> email = value},
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
         Spacer(modifier = Modifier.height(10.dp))
         OutlinedTextField(
-            enabled = authState !is AuthState.Loading,
             modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading,
             value = password,
-            label = { Text("Şifre") },
-            onValueChange = { value -> password = value},
+            onValueChange = {password = it},
+            label = {Text("Şifre")},
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = PasswordVisualTransformation()
@@ -73,24 +79,18 @@ fun LoginScreen(onNavigateToRegister: () -> Unit = {}){
             Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
             }
-        } else {
+        } else{
             Button(onClick = {
-                authViewModel.signIn(email,password)
+                authViewModel.signUp(email,password)
             }, modifier = Modifier.fillMaxWidth()) {
-                Text("Giriş Yap")
+                Text("Kayıt Ol")
             }
         }
 
         if (authState is AuthState.Success){
-            Text("Giriş yapıldı")
+            Text("Kayıt Başarılı")
         } else if (authState is AuthState.Error){
             Text((authState as AuthState.Error).message)
-        }
-
-
-        Spacer(modifier = Modifier.height(16.dp))
-        TextButton(onClick = onNavigateToRegister) {
-            Text("Hesabınız yok mu? Kayıt Ol")
         }
 
     }
