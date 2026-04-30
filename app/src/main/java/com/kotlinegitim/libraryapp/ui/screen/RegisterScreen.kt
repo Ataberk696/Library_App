@@ -8,12 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,75 +26,117 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.kotlinegitim.libraryapp.ui.viewmodel.AuthState
 import com.kotlinegitim.libraryapp.ui.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen(onRegisterSuccess: () -> Unit){
-    val authViewModel : AuthViewModel = viewModel()
-    val authState by authViewModel.authState.collectAsState()
+fun RegisterScreen(
+    onNavigateToLogin: () -> Unit,
+    authViewModel: AuthViewModel
+) {
 
+    val authState by authViewModel.authState.collectAsState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    LaunchedEffect(authState) {
-        if (authState is AuthState.Success){
-            onRegisterSuccess()
-        }
-    }
+    var fullName by remember { mutableStateOf("") }
+    var studentNo by remember { mutableStateOf("") }
 
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(26.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
-    ){
-        Text("Kütüphane Sistemi Kayıt")
-        Spacer(modifier = Modifier.height(10.dp))
-        Text("Kayıt Ol")
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            enabled = authState !is AuthState.Loading,
-            value = email,
-            label = {Text("E-posta")},
-            onValueChange = { value -> email = value},
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+    ) {
+        Text(
+            text = "Kayıt Ol",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold
         )
-        Spacer(modifier = Modifier.height(10.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            enabled = authState !is AuthState.Loading,
-            value = password,
-            onValueChange = {password = it},
-            label = {Text("Şifre")},
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            visualTransformation = PasswordVisualTransformation()
-        )
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        if (authState is AuthState.Loading){
-            Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.onPrimary)
-            }
-        } else{
-            Button(onClick = {
-                authViewModel.signUp(email,password)
-            }, modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = fullName,
+            onValueChange = { fullName = it },
+            label = { Text("Ad Soyad") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("E-posta") },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Şifre") },
+            modifier = Modifier.fillMaxWidth(),
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = studentNo,
+            onValueChange = { studentNo = it },
+            label = { Text("Öğrenci No (opsiyonel)") },
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (authState is AuthState.Error) {
+            Text(
+                text = (authState as AuthState.Error).message,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+        }
+
+        Button(
+            onClick = {
+                authViewModel.signUp(
+                    email = email.trim(),
+                    password = password,
+                    fullName = fullName.trim(),
+                    studentNo = studentNo.trim().ifEmpty { null }
+                )
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = authState !is AuthState.Loading
+        ) {
+            if (authState is AuthState.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            } else {
                 Text("Kayıt Ol")
             }
         }
+        Spacer(modifier = Modifier.height(12.dp))
 
-        if (authState is AuthState.Success){
-            Text("Kayıt Başarılı")
-        } else if (authState is AuthState.Error){
-            Text((authState as AuthState.Error).message)
+        TextButton(onClick = {onNavigateToLogin()}) {
+            Text("Zaten hesabın var mı? Giriş Yap")
         }
-
     }
 }

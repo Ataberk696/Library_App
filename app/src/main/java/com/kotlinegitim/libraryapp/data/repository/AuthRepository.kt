@@ -1,31 +1,54 @@
 package com.kotlinegitim.libraryapp.data.repository
 
+import com.kotlinegitim.libraryapp.data.model.Profile
+import com.kotlinegitim.libraryapp.data.supabase.supabase
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.providers.builtin.Email
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
 class AuthRepository
 {
-    suspend fun signIn(email: String, password:String) : Result<Unit> = runCatching {
-        delay(2000)
 
-        val isSuccess = Random.nextBoolean()
-        if (isSuccess){
-            Unit
-        }else {
-            throw Exception("Fake login failed.")
+    suspend fun signIn(email: String,password: String) : Result<Unit> = runCatching {
+        supabase.auth.signInWith(Email){
+            this.email = email
+            this.password = password
         }
     }
 
-    suspend fun signUp(email: String, password: String): Result<Unit> = runCatching {
-        delay(2000)
+    suspend fun signUp(
+        email: String,
+        password: String,
+        fullName: String,
+        studentNo: String?
+    ): Result<Unit> = runCatching {
+        supabase.auth.signUpWith(Email){
+            this.email = email
+            this.password = password
 
-        val isSuccess = Random.nextBoolean()
-        if (isSuccess){
-            Unit
-        }else{
-            throw Exception("Fake register failed.")
         }
+
+        val userId = supabase.auth.currentUserOrNull()?.id ?: error("kullanıcı bulunamadı")
+        println(userId)
+
+        // Bu userId'i al kendi tablona yaz, profil ile userı bağla.
+
+        supabase.postgrest["profiles"].insert(
+            Profile(userId,"student",fullName,studentNo)
+        )
+
     }
 
+    fun getCurrentUserId() : String?
+    {
+        return supabase.auth.currentUserOrNull()?.id;
+    }
 
+    suspend fun getProfile(userId: String): Profile? = runCatching {
+        supabase.postgrest["profiles"]
+            .select { filter { eq("user_id", userId) }  }
+            .decodeSingle<Profile>()
+    }.getOrNull()
 }
