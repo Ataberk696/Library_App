@@ -23,4 +23,37 @@ class BookRepository {
     }
 
     // Ödev2: BookRepository güncelleme, silme , arama fonksiyonlarını tanımla
+
+    suspend fun updateBook(book: Book): Result<Unit> = runCatching {
+        supabase.postgrest["books"]
+            .update(book) {
+                filter { eq("id",book.id) }
+            }
+    }
+
+    suspend fun deleteBook(bookId: String): Result<Unit> = runCatching {
+        supabase.postgrest["books"]
+            .delete {
+                filter { eq("id",bookId) }
+            }
+    }
+
+    suspend fun searchBook(query: String): Result<List<Book>> = runCatching {
+        if (query.isBlank()) {
+            getAllBooks().getOrThrow()
+        } else {
+            supabase.postgrest["books"]
+                .select {
+                    filter {
+                        or {
+                            ilike("title", "%$query%")
+                            ilike("author", "%$query%")
+                        }
+                    }
+                }
+                .decodeList<Book>()
+        }
+    }
+
+
 }
