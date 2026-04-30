@@ -38,6 +38,7 @@ import com.kotlinegitim.libraryapp.ui.viewmodel.AuthViewModel
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
+    onRegisterSuccess: () -> Unit,
     authViewModel: AuthViewModel
 ) {
 
@@ -46,6 +47,13 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
     var studentNo by remember { mutableStateOf("") }
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success){
+            onRegisterSuccess()
+            authViewModel.resetState()
+        }
+    }
 
 
     Column(
