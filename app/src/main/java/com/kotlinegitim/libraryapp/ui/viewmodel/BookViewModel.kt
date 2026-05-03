@@ -9,6 +9,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
+sealed class BorrowResult {
+    object Idle : BorrowResult()
+    object Loading : BorrowResult()
+    object Success : BorrowResult()
+    data class Error(val message: String) : BorrowResult()
+}
+
 class BookViewModel : ViewModel() {
     private val repository = BookRepository()
 
@@ -23,6 +30,9 @@ class BookViewModel : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _borrowResult = MutableStateFlow<BorrowResult>(BorrowResult.Idle)
+    val borrowResult: StateFlow<BorrowResult> = _borrowResult
 
     init {
         loadBooks()
@@ -81,5 +91,23 @@ class BookViewModel : ViewModel() {
                 .onFailure { _error.value = it.message }
             _isLoading.value = false
         }
+    }
+
+    fun borrowBook(bookId: String, studentId: String, dueDate: String) {
+        viewModelScope.launch {
+            _borrowResult.value = BorrowResult.Loading
+            repository.borrowBook(bookId,studentId,dueDate)
+                .onSuccess {
+                    _borrowResult.value = BorrowResult.Success
+                    loadBooks()
+                }
+                .onFailure { e ->
+                    _borrowResult.value = BorrowResult.Error(e.message ?: "Hata Oluştu")
+                }
+        }
+    }
+
+    fun resetBorrowResult() {
+        _borrowResult.value = BorrowResult.Idle
     }
 }

@@ -1,6 +1,7 @@
 package com.kotlinegitim.libraryapp.data.repository
 
 import com.kotlinegitim.libraryapp.data.model.Book
+import com.kotlinegitim.libraryapp.data.model.BorrowRecord
 import com.kotlinegitim.libraryapp.data.supabase.supabase
 import io.github.jan.supabase.postgrest.postgrest
 
@@ -54,6 +55,29 @@ class BookRepository {
                 .decodeList<Book>()
         }
     }
+
+    suspend fun borrowBook(bookId: String,studentId: String, dueDate: String): Result<Unit> = runCatching {
+        val book = getBookById(bookId).getOrThrow()
+        if (book.avaiableCopies <= 0){
+            error("Kitap stokta bulunmamaktadır.")
+        }
+
+        val borrowRecord = BorrowRecord(
+            id = null,
+            studentId = studentId,
+            bookId = bookId,
+            borrowedAt = "",
+            dueDate = dueDate,
+        )
+        supabase.postgrest["borrow_records"].insert(borrowRecord)
+
+        val updatedBook = book.copy(avaiableCopies = book.avaiableCopies - 1)
+        supabase.postgrest["books"].update(updatedBook) {
+            filter { eq("id",bookId) }
+        }
+    }
+
+
 
 
 }
