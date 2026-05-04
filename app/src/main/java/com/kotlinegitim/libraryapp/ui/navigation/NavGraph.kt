@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.kotlinegitim.libraryapp.ui.screen.HomeScreen
 import com.kotlinegitim.libraryapp.ui.screen.LoginScreen
+import com.kotlinegitim.libraryapp.ui.screen.MyBorrowsScreen
 import com.kotlinegitim.libraryapp.ui.screen.RegisterScreen
 import com.kotlinegitim.libraryapp.ui.screen.SplashScreen
 import com.kotlinegitim.libraryapp.ui.viewmodel.AuthViewModel
@@ -55,7 +56,18 @@ fun NavGraph(navController: NavHostController = rememberNavController()){
             authViewModel
         ) }
         composable( Screen.Homepage.route) {
-            HomeScreen(authViewModel, bookViewModel)
+            HomeScreen(
+                authViewModel,
+                bookViewModel,
+                onNavigateToMyBorrows = { navController.navigate(Screen.MyBorrows.route) })
+        }
+
+        composable(Screen.MyBorrows.route) {
+            MyBorrowsScreen(
+                authViewModel = authViewModel,
+                onNavigateBack = { navController.popBackStack() },
+                borrowViewModel = viewModel()
+            )
         }
     }
 }

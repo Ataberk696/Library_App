@@ -57,7 +57,8 @@ import kotlin.time.ExperimentalTime
 @Composable
 fun HomeScreen(
     authViewModel: AuthViewModel,
-    bookViewModel: BookViewModel
+    bookViewModel: BookViewModel,
+    onNavigateToMyBorrows: () -> Unit,
 ) {
     val profile by authViewModel.profile.collectAsState()
     val books by bookViewModel.books.collectAsState()
@@ -94,6 +95,9 @@ fun HomeScreen(
                 ),
                 actions = {
                     if (profile != null) {
+                        TextButton(onClick = onNavigateToMyBorrows) {
+                            Text("Kiralamalarım", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        }
                         Text(
                             text = "Merhaba, ${profile!!.fullName}",
                             modifier = Modifier.padding(end = 16.dp),
