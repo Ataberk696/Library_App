@@ -60,9 +60,9 @@ fun MyBorrowsScreen(
         topBar = {
             TopAppBar(
                 title =  { Text("Kiraladığım Kitaplar") },
-                navigationIcon = {
+                 navigationIcon = {
                     TextButton(onClick = onNavigateBack) {
-                        Text("<- Geri")
+                        Text("<-")
                     }
                 }
             )

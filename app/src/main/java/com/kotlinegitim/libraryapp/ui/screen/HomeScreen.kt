@@ -1,6 +1,6 @@
 package com.kotlinegitim.libraryapp.ui.screen
 
-import android.R
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +21,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -59,6 +65,7 @@ fun HomeScreen(
     authViewModel: AuthViewModel,
     bookViewModel: BookViewModel,
     onNavigateToMyBorrows: () -> Unit,
+    onSignOut: () -> Unit
 ) {
     val profile by authViewModel.profile.collectAsState()
     val books by bookViewModel.books.collectAsState()
@@ -95,14 +102,46 @@ fun HomeScreen(
                 ),
                 actions = {
                     if (profile != null) {
-                        TextButton(onClick = onNavigateToMyBorrows) {
-                            Text("Kiralamalarım", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                        var expanded by remember { mutableStateOf(false) }
+                        Box {
+                            IconButton(onClick = { expanded = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = "Profil menüsü",
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("📚 Kiralamalarım") },
+                                    onClick = {
+                                        expanded = false
+                                        onNavigateToMyBorrows()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            "👤 ${profile!!.fullName}",
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    },
+                                    onClick = { expanded = false },
+                                    enabled = false
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("🚪 Çıkış Yap", color = MaterialTheme.colorScheme.error) },
+                                    onClick = {
+                                        expanded = false
+                                        authViewModel.signOut()
+                                        onSignOut()
+                                    }
+                                )
+                            }
                         }
-                        Text(
-                            text = "Merhaba, ${profile!!.fullName}",
-                            modifier = Modifier.padding(end = 16.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
                     }
                 }
             )
