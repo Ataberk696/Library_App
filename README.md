@@ -7,7 +7,7 @@ Turkcell Kotlin Bootcamp kapsamında geliştirilmiş basit bir kütüphane yöne
 
 |               Ana Sayfa                |              Kiraladığım kitaplar              |
 | :------------------------------------: | :--------------------------------------------: |
-| ![Ana Sayfa](screenshots/homepage.png) | ![Kiralamalarım](screenshots/borrowscreen.png) |
+| ![Ana Sayfa](screenshots/homepage.PNG) | ![Kiralamalarım](screenshots/borrowscreen.PNG) |
 
 ## Kullanılan Teknolojiler
 
